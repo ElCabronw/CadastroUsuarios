@@ -62,7 +62,7 @@ namespace CadastroDeUsuarios.Controllers
                     return Unauthorized(errorMsg);
                 }
 
-                result = await _signInManager.PasswordSignInAsync(model.Email, model.Senha, false, true);
+                result = await _signInManager.PasswordSignInAsync(usuarioEf.UserName, model.Senha, false, true);
             }
             catch (Exception e)
             {
@@ -78,6 +78,8 @@ namespace CadastroDeUsuarios.Controllers
                                                               usuarioEf.Nome,
                                                               permissoes
                                                             );
+                _cadastroRepository.OnLoginUser(usuarioEf);
+
                 return Ok(response);
 
 
@@ -109,7 +111,7 @@ namespace CadastroDeUsuarios.Controllers
         private async Task<object> GerarTokenUsuarioNovo(string email,
                                                        Guid usuarioId,
                                                        string nomeUsuario,
-                                                       List<Paginas> permissoes
+                                                       List<Paginas> profiles
                                                       )
         {
             var usuario = await _userManager.FindByEmailAsync(email);
@@ -152,11 +154,14 @@ namespace CadastroDeUsuarios.Controllers
                 usuario = new
                 {
                     id = usuarioId,
+                    created = usuario.Created.ToString("dd/MM/yyyy hh:mm"),
+                    modified = usuario.Modified.HasValue ? usuario.Modified.Value.ToString("dd/MM/yyyy hh:mm") :null,
+                    last_login = usuario.LastLogin.ToString("dd/MM/yyyy hh:mm"),
                     claims = userClaims.Select(c => new { c.Type, c.Value }),
                     nome = !string.IsNullOrEmpty(nomeUsuario) ? nomeUsuario.Trim() : email,
                     email = email
                 },
-                permissoes
+                profiles
             };
 
             return response;

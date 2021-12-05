@@ -3,6 +3,7 @@ using CadastroDeUsuarios.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace CadastroDeUsuarios.Areas.Data
 {
@@ -11,15 +12,16 @@ namespace CadastroDeUsuarios.Areas.Data
         public UsuariosContext()
         {
         }
-
-        public UsuariosContext(DbContextOptions<UsuariosContext> options) : base(options)
+        private IConfiguration _configuration;
+        public UsuariosContext(DbContextOptions<UsuariosContext> options, IConfiguration configuration) : base(options)
         {
-
+            _configuration = configuration;
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            
-            optionsBuilder.UseNpgsql("User Id=postgres;Password=cataguases9;Host=localhost;Port=5432;Database=CadastroDeUsuarios;Pooling=true;");
+
+            var connection = _configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseNpgsql(connection);
         }
 
         public DbSet<Acessos> Acessos { get; set; }

@@ -42,6 +42,14 @@ namespace CadastroDeUsuarios.Repositories
 
         }
 
+        public void OnLoginUser(ApplicationUser usuario)
+        {
+            usuario.LastLogin = DateTime.Now;
+            Db.SaveChanges();
+
+        }
+
+
         public async Task<bool> AssociarPerfil(ApplicationUser usuario, List<Guid> acessos)
         {
            // var user = new ApplicationUser { UserName = usuario.Email, Email = usuario.Email };
@@ -73,6 +81,33 @@ namespace CadastroDeUsuarios.Repositories
         public ApplicationUser ObterPorId(Guid id)
         {
             return Db.Set<ApplicationUser>().AsNoTracking().FirstOrDefault(t => t.Id.Equals(id));
+        }
+        public async Task<ApplicationUser> ObterPorIdDapper(Guid usuarioId)
+        {
+
+
+
+            using (var conn = _db.Connection)
+            {
+
+                string query = @$"SELECT * FROM ""AspNetUsers"" WHERE ""Id"" = '{usuarioId}'";
+                //var acessos = (await conn.QueryAsync<Acessos>(sql:query)).ToList();
+                try
+                {
+                    var user = await conn.ExecuteScalarAsync<ApplicationUser>(query);
+                    return user;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+
+
+
+
+
+            }
+
         }
         public List<ApplicationUser> ObterTodosUsuarios()
         {

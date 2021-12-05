@@ -54,5 +54,34 @@ namespace CadastroDeUsuarios.Repositories
             }
 
         }
+
+        public async Task<Acessos> GetAcessoByName(string nomeAcesso)
+        {
+
+
+
+            using (var conn = _db.Connection)
+            {
+
+                string query = @$"SELECT * FROM ""Acessos"" WHERE ""NivelAcesso"" = '{nomeAcesso}'";
+                //var acessos = (await conn.QueryAsync<Acessos>(sql:query)).ToList();
+                try
+                {
+                    var acessos = await conn.QueryAsync<Acessos>(query);
+                    return acessos.FirstOrDefault();
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+
+
+
+
+
+            }
+
+        }
+
     }
 }

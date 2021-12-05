@@ -7,6 +7,7 @@ namespace CadastroDeUsuarios.Interfaces
 {
     public interface IAcessosRepository : IRepository<Acessos>
     {
+        Task<Acessos> GetAcessoByName(string nomeAcesso);
         Task<List<Acessos>> GetAcessosAsync();
     }
 }

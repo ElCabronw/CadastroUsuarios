@@ -53,30 +53,51 @@ namespace CadastroDeUsuarios.Controllers
                 Id = x.Id,
                 Nome = x.Nome,
                 Email = x.Email,
-                Created = x.Created.ToString("dd/MM/yyyy"),
-                LastLogin = x.LastLogin.ToString("dd/MM/yyyy")
+                Created = x.Created.ToString("dd/MM/yyyy hh:mm"),
+                LastLogin = x.LastLogin.ToString("dd/MM/yyyy hh:mm")
 
 
             }).FirstOrDefault();
+
+            if (usuario == null)
+            {
+                return Response_BadRequest("Não foi encontrado um usuário com o Id informado.");
+            }
 
             return Ok(usuario);
         }
         [HttpGet]
         [Route("{id}")]
-        public IActionResult Get(Guid id)
+        public async Task<IActionResult> GetAsync(Guid id)
         {
-            var usuario = _cadastroRepository.Buscar(x => x.Id == id).Select(x => new
+            var usuario =  _cadastroRepository.ObterPorId(id);
+            //        .Select(x => new
+            //   {
+            //      Id = x.Id,
+            //     Nome = x.Nome,
+            //    Email = x.Email,
+            //   Created = x.Created.ToString("dd/MM/yyyy"),
+            //  LastLogin = x.LastLogin.ToString("dd/MM/yyyy")
+
+
+            //            }).FirstOrDefault();
+
+            if (usuario == null)
             {
-                Id = x.Id,
-                Nome = x.Nome,
-                Email = x.Email,
-                Created = x.Created.ToString("dd/MM/yyyy"),
-                LastLogin = x.LastLogin.ToString("dd/MM/yyyy")
+                return Response_BadRequest("Não foi encontrado um usuário com o Id informado.");
+            }
+            var usuarioObj = new
+            {
+                Id = usuario.Id,
+                Nome = usuario.Nome,
+                Email = usuario.Email,
+                Created = usuario.Created.ToString("dd/MM/yyyy hh:mm"),
+                LastLogin = usuario.LastLogin.ToString("dd/MM/yyyy hh:mm")
 
+            };
 
-            }).FirstOrDefault();
-
-            return Ok(usuario);
+            return Ok(usuarioObj);
+            
         }
 
         [HttpGet]
@@ -88,8 +109,8 @@ namespace CadastroDeUsuarios.Controllers
                 Id = x.Id,
                 Nome = x.Nome,
                 Email = x.Email,
-                Created = x.Created.ToString("dd/MM/yyyy"),
-                LastLogin = x.LastLogin.ToString("dd/MM/yyyy")
+                Created = x.Created.ToString("dd/MM/yyyy hh:mm"),
+                LastLogin = x.LastLogin.ToString("dd/MM/yyyy hh:mm")
 
 
             }).ToList();
@@ -106,14 +127,7 @@ namespace CadastroDeUsuarios.Controllers
             var consulta = await _acessosRepository.GetAcessosAsync();
             return Ok(consulta);
 
-           /* var query = _acessosRepository.ObterTodos().Select(x => new
-            {
-                Id = x.Id,
-                Nome = x.NivelAcesso
-            }).ToList();
-
-            */
-           // return Ok(query);
+        
         }
 
 
@@ -190,11 +204,11 @@ namespace CadastroDeUsuarios.Controllers
 
         [HttpPost]
         [Route("criar-perfil-acesso")]
-        public IActionResult CriaPerfilDeAcesso([FromBody] CriarPerfilAcessoViewModel nomePerfil)
+        public async Task<IActionResult> CriaPerfilDeAcessoAsync([FromBody] CriarPerfilAcessoViewModel nomePerfil)
         {
-            var checkExists = _acessosRepository.Buscar(x => x.NivelAcesso.Equals(nomePerfil)).Any();
+            var checkExists = await _acessosRepository.GetAcessoByName(nomePerfil.NomeDoPerfil);
 
-            if (checkExists)
+            if (checkExists != null)
             {
                 return Response_BadRequest("Já existe um perfil criado com o mesmo nome cadastrado.");
             }
@@ -251,6 +265,9 @@ namespace CadastroDeUsuarios.Controllers
                 var token = await _userManager.GenerateChangeEmailTokenAsync(usuarioEF, values.Email);
 
                 await _userManager.ChangeEmailAsync(usuarioEF, values.Email, token);
+
+
+                await _userManager.SetUserNameAsync(usuarioEF, values.Email);
 
             }
 
